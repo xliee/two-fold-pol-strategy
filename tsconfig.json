@@ -1,0 +1,32 @@
+{
+  "files": ["./hardhat.config.ts"],
+  "compilerOptions": {
+    "target": "es2018",
+    "module": "commonjs",
+    "noImplicitAny": false,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "typeRoots": [
+      "node_modules/@types"
+    ],
+    "lib": [
+      "es2018",
+      "dom"
+    ]
+  },
+  "exclude": [
+    "node_modules/",
+    "contracts/",
+  ],
+  "include": [
+    "types.d.ts",
+    "hre.d.ts",
+    "utils/",
+    "tests/"
+  ],
+  "types": [
+    "jest",
+    "node"
+  ]
+}
