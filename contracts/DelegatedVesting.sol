@@ -52,9 +52,11 @@ contract DelegatedInstance {
   function unlockAndRedeem() public {
     require(msg.sender == sender, "Incorrect sender");
 
+    uint256 stake = balances[msg.sender];
+
     delete balances[msg.sender];
-    governance.unlock(balance);
-    token.transfer(spender, balance);
+    governance.unlock(stake);
+    token.transfer(spender, stake);
   }
 
 }
