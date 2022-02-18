@@ -31,8 +31,8 @@ contract LiquidityManagement {
     uint256 amountDAI,
     uint256 amountTORN,
     uint256 slippageETH,
-    uint8 slippageTORN,
-    uint8 slippageDAI,
+    uint256 slippageTORN,
+    uint256 slippageDAI,
   ) public returns (bool) {
     require(DAI.transferFrom(msg.sender, address(this), amountDAI));
     require(TORN.transferFrom(msg.sender, address(this), amountTORN));
@@ -40,9 +40,9 @@ contract LiquidityManagement {
 
     uint256 deploymentDeadline = now + 6000;
     uint256 amountSeedTORN = amountTORN / 2;
-    uint256 minimumAmountTORN = amountSeedTORN - (1 ether * slippageTORN);
-    uint256 minimumAmountDAI = amountDAI - (1 ether * slippageDAI);
+    uint256 minimumAmountDAI = amountDAI - slippageDAI;
     uint256 minimumAmountETH = amountETH - slippageETH;
+    uint256 minimumAmountTORN = amountSeedTORN - slippageTORN;
 
     DAI.approve(UNIV2_ROUTER02_ADDRESS, amountDAI);
     TORN.approve(UNIV2_ROUTER02_ADDRESS, amountTORN);

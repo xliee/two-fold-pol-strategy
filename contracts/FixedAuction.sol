@@ -83,7 +83,7 @@ contract FixedAuction {
     uint256 orderAmount = msg.value / auctions[auctionId].price;
 
     require(
-      orderAmount > vestingToken.balanceOf(address(this))
+      orderAmount <= vestingToken.balanceOf(address(this))
       "Insufficient auction balance"
     );
     require(

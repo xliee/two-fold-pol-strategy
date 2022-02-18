@@ -8,11 +8,13 @@ interface IGovernance  {
     uint256 deadline,
     uint8 v,
     bytes32 r,
-    bytes32 s
+    bytes32 s,
   ) external;
 
   function delegate(address to) external;
 
   function undelegate() external;
+
+  function unlock(address to) external;
 
 }
