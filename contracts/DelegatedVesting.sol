@@ -13,10 +13,9 @@ contract DelegatedInstance {
   IERC20 token;
 
   constructor(
-    address delegationAddress,
+    address stakeholderAddress,
     address governanceAddress,
     address tokenAddress,
-    uint256 stakeAmount,
     uint256 deadline,
     uint8 v,
     bytes32 r,
@@ -25,10 +24,7 @@ contract DelegatedInstance {
     governance = IGovernance(governanceAddress);
     token = IERC20(tokenAddress);
 
-    token.transferFrom(msg.sender, stakeAmount);
-    lockAndDelegate(delegationAddress, deadline, v, r, s);
-
-    spender = delegationAddress;
+    spender = stakeholderAddress;
     balance = stakeAmount;
     sender = msg.sender;
   }
@@ -39,7 +35,14 @@ contract DelegatedInstance {
     governance.delegate(to);
   }
 
-  function lockAndDelegate(address to, deadline, v, r, s) internal {
+  function lockAndDelegate(
+    address to,
+    uint256 amount, uint256 deadline,
+    uint8 v, bytes32 r, bytes32 s,
+  ) external {
+    require(msg.sender == sender);
+
+    token.transferFrom(msg.sender, address(this), amount);
     governance.lock(
       address(this), stakeAmount, deadline, v, r, s,
     );
@@ -99,14 +102,14 @@ contract DelegatedVesting {
 
   function makeCommitment(
     address recipientAddress,
-    uint256 stakeAmount,
+    uint256 amount,
   ) external returns (bool) {
-    require(vestingToken.transferFrom(msg.sender, address(this), stakeAmount));
+    require(vestingToken.transferFrom(msg.sender, address(this), amount));
 
     if(isActiveCommitment(recipientAddress)) {
-      balances[recipientAddress] = balances[recipientAddress] + stakeAmount;
+      balances[recipientAddress] = balances[recipientAddress] + amount;
     } else {
-      balances[recipientAddress] = stakeAmount;
+      balances[recipientAddress] = amount;
     }
     commitments[recipientAddress] = now + vestingPeriod;
 
@@ -114,19 +117,19 @@ contract DelegatedVesting {
   }
 
   function delegateCommitment(
-    address candidateAddress,
+    address to,
     uint256 deadline,
     uint8 v,
     bytes32 r,
     bytes32 s,
-  ) external {
+  ) public {
     require(isActiveCommitment(msg.sender), "Not an active commitment");
 
     if(isDelegatedCommitment(msg.sender)) {
       DelegatedInstance(delegations[msg.sender]).delegate(candidateAddress);
     } else {
       DelegatedInstance e = new DelegatedInstance(
-        candidateAddress,
+        msg.sender,
         vestingGovernance,
         address(vestingToken),
         balances[msg.sender],
@@ -134,6 +137,8 @@ contract DelegatedVesting {
         deadline,
         v, r, s,
      );
+     vestingToken.approve(address(e), balances[msg.sender]);
+     e.lockAndDelegate(to, balances[msg.sender], deadline, v, r, s);
      delegations[msg.sender] = address(e);
     }
   }

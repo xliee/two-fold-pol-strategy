@@ -44,6 +44,9 @@ contract LiquidityManagement {
     uint256 minimumAmountDAI = amountDAI - (1 ether * slippageTORN);
     uint256 minimumAmountETH = amountETH - slippageETH;
 
+    DAI.approve(UNIV2_ROUTER02_ADDRESS, amountDAI);
+    TORN.approve(UNIV2_ROUTER02_ADDRESS, amountTORN);
+
     UNIV2_ROUTER.addLiquidity(
       DAI_ADDRESS, TORN_ADDRESS,
       amountDAI, amountSeedTORN, minimumAmountDAI, minimumAmountTORN,
