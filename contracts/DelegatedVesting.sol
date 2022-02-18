@@ -16,10 +16,6 @@ contract DelegatedInstance {
     address stakeholderAddress,
     address governanceAddress,
     address tokenAddress,
-    uint256 deadline,
-    uint8 v,
-    bytes32 r,
-    bytes32 s,
   ) {
     governance = IGovernance(governanceAddress);
     token = IERC20(tokenAddress);
@@ -146,11 +142,12 @@ contract DelegatedVesting {
     uint256 stake = balances[msg.sender];
     uint256 delegated = delegations[msg.sender];
 
-    if(stake == delegated){
+    delete balances[msg.sender];
+
+    if(delegated != address(0x0)){
       delete delegations[msg.sender];
       DelegatedInstance(delegated).unlockAndRedeem();
     } else {
-      delete balances[msg.sender];
       vestingToken.transfer(msg.sender, stake);
     }
   }

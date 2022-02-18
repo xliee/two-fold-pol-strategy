@@ -83,11 +83,11 @@ contract FixedAuction {
     uint256 orderAmount = msg.value / auctions[auctionId].price;
 
     require(
-      orderAmount >= vestingToken.balanceOf(address(this))
+      orderAmount > vestingToken.balanceOf(address(this))
       "Insufficient auction balance"
     );
     require(
-      orderAmount > MAX_CONTRIBUTION,
+      orderAmount <= MAX_CONTRIBUTION,
       "Insufficient order amount"
     );
 
@@ -95,10 +95,10 @@ contract FixedAuction {
     i.makeCommitment(msg.sender, orderAmount);
   }
 
-  function finaliseAuction() {
+  function finaliseAuction() public {
     require(!isAuctionActive());
 
-    transfer(auctionSafe, this.balance); 
+    transfer(auctionSafe, this.balance);
   }
 
 }

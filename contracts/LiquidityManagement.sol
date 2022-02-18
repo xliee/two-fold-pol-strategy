@@ -41,7 +41,7 @@ contract LiquidityManagement {
     uint256 deploymentDeadline = now + 6000;
     uint256 amountSeedTORN = amountTORN / 2;
     uint256 minimumAmountTORN = amountSeedTORN - (1 ether * slippageTORN);
-    uint256 minimumAmountDAI = amountDAI - (1 ether * slippageTORN);
+    uint256 minimumAmountDAI = amountDAI - (1 ether * slippageDAI);
     uint256 minimumAmountETH = amountETH - slippageETH;
 
     DAI.approve(UNIV2_ROUTER02_ADDRESS, amountDAI);
