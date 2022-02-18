@@ -49,7 +49,7 @@ contract FixedAuction {
     uint256 auctionAmount,
     uint256 auctionPrice,
     uint256 vestingPeriod,
-    address governanceAddress
+    address governanceAddress,
   ) isOperator external returns (bool) {
     require((endTimestamp - startTimestamp) >= MIN_DURATION, "Insufficient end time");
     require(startTimestamp => (now + DELAY), "Insufficient start time");

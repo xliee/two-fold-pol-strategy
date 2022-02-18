@@ -20,7 +20,7 @@ contract DelegatedInstance {
     uint256 deadline,
     uint8 v,
     bytes32 r,
-    bytes32 s
+    bytes32 s,
   ) {
     governance = IGovernance(governanceAddress);
     token = IERC20(tokenAddress);
@@ -41,7 +41,7 @@ contract DelegatedInstance {
 
   function lockAndDelegate(address to, deadline, v, r, s) internal {
     governance.lock(
-      address(this), stakeAmount, deadline, v, r, s
+      address(this), stakeAmount, deadline, v, r, s,
     );
     governance.delegate(to);
   }
@@ -50,7 +50,6 @@ contract DelegatedInstance {
     require(msg.sender == sender, "Incorrect sender");
 
     delete balances[msg.sender];
-
     governance.unlock(balance);
     token.transfer(spender, balance);
   }
@@ -60,7 +59,7 @@ contract DelegatedInstance {
 contract DelegatedVesting {
 
   uint256 public vestingPeriod;
-  IGovernance public vestingGovernance;
+  address public vestingGovernance;
   IERC20 public vestingToken;
 
   mapping(address => uint256) balances;
@@ -74,7 +73,7 @@ contract DelegatedVesting {
   ) {
     vestingPeriod = vestingDuration;
     vestingToken = IERC20(tokenAddress);
-    vestingGovernance = IGovernance(governanceAddress);
+    vestingGovernance = governanceAddress;
   }
 
   function isActiveCommitment(address stakeholderAddress) view returns (bool) {
@@ -109,7 +108,6 @@ contract DelegatedVesting {
     } else {
       balances[recipientAddress] = stakeAmount;
     }
-
     commitments[recipientAddress] = now + vestingPeriod;
 
     return true;
@@ -120,7 +118,7 @@ contract DelegatedVesting {
     uint256 deadline,
     uint8 v,
     bytes32 r,
-    bytes32 s
+    bytes32 s,
   ) external {
     require(isActiveCommitment(msg.sender), "Not an active commitment");
 
@@ -134,7 +132,7 @@ contract DelegatedVesting {
         balances[msg.sender],
         vestingPeriod,
         deadline,
-        v, r, s
+        v, r, s,
      );
      delegations[msg.sender] = address(e);
     }
@@ -148,10 +146,11 @@ contract DelegatedVesting {
 
     if(stake == delegated){
       delete delegations[msg.sender];
-      DelegatedInstance(delegations[msg.sender]).unlockAndRedeem();
+      DelegatedInstance(delegated).unlockAndRedeem();
+    } else {
+      delete balances[msg.sender];
+      vestingToken.transfer(msg.sender, stake);
     }
-    delete balances[msg.sender];
-    vestingToken.transfer(msg.sender, stake);
   }
 
  }
