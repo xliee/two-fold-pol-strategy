@@ -44,7 +44,7 @@ contract DelegatedInstance {
 
     token.transferFrom(msg.sender, address(this), amount);
     governance.lock(
-      address(this), stakeAmount, deadline, v, r, s,
+      address(this), amount, deadline, v, r, s,
     );
     governance.delegate(to);
   }
