@@ -104,12 +104,13 @@ contract DelegatedVesting {
   ) public {
     require(vestingToken.transferFrom(msg.sender, address(this), amount));
 
+    commitments[recipientAddress] = vestingPeriod;
+
     if(isActiveCommitment(recipientAddress)) {
       balances[recipientAddress] = balances[recipientAddress] + amount;
     } else {
       balances[recipientAddress] = amount;
     }
-    commitments[recipientAddress] = now + vestingPeriod;
   }
 
   function delegateCommitment(
