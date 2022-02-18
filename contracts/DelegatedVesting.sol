@@ -52,9 +52,9 @@ contract DelegatedInstance {
   function unlockAndRedeem() public {
     require(msg.sender == sender, "Incorrect sender");
 
-    uint256 stake = balances[msg.sender];
+    uint256 stake = balance;
 
-    delete balances[msg.sender];
+    delete balance;
     governance.unlock(stake);
     token.transfer(spender, stake);
   }
@@ -72,11 +72,11 @@ contract DelegatedVesting {
   mapping(address => uint256) commitments;
 
   constructor(
-    uint256 vestingDuration,
+    uint256 vestingTimestamp,
     address governanceAddress,
     address tokenAddress,
   ) {
-    vestingPeriod = vestingDuration;
+    vestingPeriod = vestingTimestamp;
     vestingToken = IERC20(tokenAddress);
     vestingGovernance = governanceAddress;
   }
@@ -105,7 +105,7 @@ contract DelegatedVesting {
   function makeCommitment(
     address recipientAddress,
     uint256 amount,
-  ) external returns (bool) {
+  ) public {
     require(vestingToken.transferFrom(msg.sender, address(this), amount));
 
     if(isActiveCommitment(recipientAddress)) {
@@ -114,28 +114,23 @@ contract DelegatedVesting {
       balances[recipientAddress] = amount;
     }
     commitments[recipientAddress] = now + vestingPeriod;
-
-    return true;
   }
 
   function delegateCommitment(
     address to,
     uint256 deadline,
-    uint8 v,
-    bytes32 r,
-    bytes32 s,
+    uint8 v, bytes32 r, bytes32 s,
   ) public {
     require(isActiveCommitment(msg.sender), "Not an active commitment");
 
     if(isDelegatedCommitment(msg.sender)) {
-      DelegatedInstance(delegations[msg.sender]).delegate(candidateAddress);
+      DelegatedInstance(delegations[msg.sender]).delegate(to);
     } else {
       DelegatedInstance e = new DelegatedInstance(
         msg.sender,
         vestingGovernance,
         address(vestingToken),
         balances[msg.sender],
-        vestingPeriod,
         deadline,
         v, r, s,
      );

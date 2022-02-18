@@ -7,12 +7,12 @@ contract FixedAuction {
   uint256 constant DELAY = 1 hours;
   uint256 constant MIN_DURATION = 1 days;
   uint256 constant MIN_CONTRIBUTION = 1 ether;
+  uint256 constant MAX_CONTRIBUTION = 1000 ether;
 
   struct Auction {
     uint256 startTime;
     uint256 endTime;
     uint256 price;
-    uint256 quantity;
     address vesting;
   }
 
@@ -44,11 +44,11 @@ contract FixedAuction {
   }
 
   function createAuction(
+    uint256 vestingTimestamp,
     uint256 startTimestamp,
     uint256 endTimestamp,
     uint256 auctionAmount,
     uint256 auctionPrice,
-    uint256 vestingPeriod,
     address governanceAddress,
   ) isOperator external returns (bool) {
     require((endTimestamp - startTimestamp) >= MIN_DURATION, "Insufficient end time");
@@ -64,16 +64,41 @@ contract FixedAuction {
 
     auctions[auctionId].startTime = startTimestamp;
     auctions[auctionId].endTime = endTimestamp;
-    auctions[auctionId].quantity = auctionAmount;
     auctions[auctionId].price = auctionPrice;
 
     DelegatedVesting instance = new DelegatedVesting(
-      vestingPeriod, governanceAddress, address(auctionToken)
+      vestingTimestamp, governanceAddress, address(auctionToken)
     );
 
     auctions[auctionId].vesting = address(instance);
 
     return true;
+  }
+
+  function placeBid() public {
+    require(isAuctionActive());
+    require(msg.value => MIN_CONTRIBUTION);
+
+    DelegatedVesting i = DelegatedVesting(auctions[auctionId].vesting);
+    uint256 orderAmount = msg.value / auctions[auctionId].price;
+
+    require(
+      orderAmount >= vestingToken.balanceOf(address(this))
+      "Insufficient auction balance"
+    );
+    require(
+      orderAmount > MAX_CONTRIBUTION,
+      "Insufficient order amount"
+    );
+
+    auctionToken.approve(address(i), orderAmount);
+    i.makeCommitment(msg.sender, orderAmount);
+  }
+
+  function finaliseAuction() {
+    require(!isAuctionActive());
+
+    transfer(auctionSafe, this.balance); 
   }
 
 }
