@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Unlicense
+
 pragma solidity 0.8.0;
 
 import "./interfaces/IERC20.sol";
@@ -16,6 +18,7 @@ contract DelegatedInstance {
     address stakeholderAddress,
     address governanceAddress,
     address tokenAddress,
+    uint256 stakeAmount
   ) {
     governance = IGovernance(governanceAddress);
     token = IERC20(tokenAddress);
@@ -34,13 +37,13 @@ contract DelegatedInstance {
   function lockAndDelegate(
     address to,
     uint256 amount, uint256 deadline,
-    uint8 v, bytes32 r, bytes32 s,
+    uint8 v, bytes32 r, bytes32 s
   ) external {
     require(msg.sender == sender);
 
     token.transferFrom(msg.sender, address(this), amount);
     governance.lock(
-      address(this), amount, deadline, v, r, s,
+      address(this), amount, deadline, v, r, s
     );
     governance.delegate(to);
   }
@@ -70,28 +73,28 @@ contract DelegatedVesting {
   constructor(
     uint256 vestingTimestamp,
     address governanceAddress,
-    address tokenAddress,
+    address tokenAddress
   ) {
     vestingPeriod = vestingTimestamp;
     vestingToken = IERC20(tokenAddress);
     vestingGovernance = governanceAddress;
   }
 
-  function isActiveCommitment(address stakeholderAddress) view returns (bool) {
+  function isActiveCommitment(address stakeholderAddress) public view returns (bool) {
     uint256 commitment = commitments[stakeholderAddress];
     uint256 stake = balances[stakeholderAddress];
 
     return stake > 0 && commitment > now;
   }
 
-  function isDelegatedCommitment(address stakeholderAddress) view returns (bool) {
+  function isDelegatedCommitment(address stakeholderAddress) public view returns (bool) {
     uint256 delegated = delegations[stakeholderAddress];
     bool state = isActiveCommitment(stakeholderAddress);
 
     return state && delegated != address(0x0);
   }
 
-  function isFulfilledCommitment(address stakeholderAddress) view returns (bool) {
+  function isFulfilledCommitment(address stakeholderAddress) public view returns (bool) {
     uint256 commitment = commitments[stakeholderAddress];
     uint256 stake = balances[stakeholderAddress];
 
@@ -100,7 +103,7 @@ contract DelegatedVesting {
 
   function makeCommitment(
     address recipientAddress,
-    uint256 amount,
+    uint256 amount
   ) public {
     require(vestingToken.transferFrom(msg.sender, address(this), amount));
 
@@ -116,7 +119,7 @@ contract DelegatedVesting {
   function delegateCommitment(
     address to,
     uint256 deadline,
-    uint8 v, bytes32 r, bytes32 s,
+    uint8 v, bytes32 r, bytes32 s
   ) public {
     require(isActiveCommitment(msg.sender), "Not an active commitment");
 
@@ -129,7 +132,7 @@ contract DelegatedVesting {
         address(vestingToken),
         balances[msg.sender],
         deadline,
-        v, r, s,
+        v, r, s
      );
      vestingToken.approve(address(e), balances[msg.sender]);
      e.lockAndDelegate(to, balances[msg.sender], deadline, v, r, s);

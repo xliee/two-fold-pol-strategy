@@ -27,7 +27,7 @@ contract FixedAuction {
   constructor(
     address tokenAddress,
     address returnAddress,
-    address operatorAddress,
+    address operatorAddress
   ) {
     auctionToken = IERC20(tokenAddress);
     auctionOperator = operatorAddress;
@@ -49,10 +49,10 @@ contract FixedAuction {
     uint256 endTimestamp,
     uint256 auctionAmount,
     uint256 auctionPrice,
-    address governanceAddress,
+    address governanceAddress
   ) isOperator external returns (bool) {
     require((endTimestamp - startTimestamp) >= MIN_DURATION, "Insufficient end time");
-    require(startTimestamp => (now + DELAY), "Insufficient start time");
+    require(startTimestamp >= (now + DELAY), "Insufficient start time");
     require(!isAuctionActive(), "Auction already ongoing");
 
     require(
@@ -77,13 +77,13 @@ contract FixedAuction {
 
   function placeBid() public {
     require(isAuctionActive());
-    require(msg.value => MIN_CONTRIBUTION);
+    require(msg.value >= MIN_CONTRIBUTION);
 
     DelegatedVesting i = DelegatedVesting(auctions[auctionId].vesting);
     uint256 orderAmount = msg.value / auctions[auctionId].price;
 
     require(
-      orderAmount <= vestingToken.balanceOf(address(this))
+      orderAmount <= vestingToken.balanceOf(address(this)),
       "Insufficient auction balance"
     );
     require(

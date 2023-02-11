@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Unlicense
+
 pragma solidity >=0.6.2;
 
 interface IUniswapV2Router02 {
@@ -10,11 +12,11 @@ interface IUniswapV2Router02 {
     uint amountAMin,
     uint amountBMin,
     address to,
-    uint deadline,
+    uint deadline
   ) external returns (
     uint amountA,
     uint amountB,
-    uint liquidity,
+    uint liquidity
   );
 
   function addLiquidityETH(
@@ -23,11 +25,11 @@ interface IUniswapV2Router02 {
     uint amountTokenMin,
     uint amountETHMin,
     address to,
-    uint deadline,
+    uint deadline
   ) external returns (
     uint amountToken,
     uint amountETH,
-    uint liquidity,
+    uint liquidity
   );
 
   function removeLiquidity(
@@ -40,7 +42,7 @@ interface IUniswapV2Router02 {
     uint deadline
   ) external returns (
     uint amountA,
-    uint amountB,
+    uint amountB
   );
 
   function removeLiquidityETH(
@@ -49,10 +51,10 @@ interface IUniswapV2Router02 {
     uint amountTokenMin,
     uint amountETHMin,
     address to,
-    uint deadline,
+    uint deadline
   ) external returns (
     uint amountToken,
-    uint amountETH,
+    uint amountETH
   );
 
 }

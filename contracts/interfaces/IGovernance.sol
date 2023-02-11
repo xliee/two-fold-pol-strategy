@@ -1,4 +1,6 @@
-pragma solidity 0.80;
+// SPDX-License-Identifier: Unlicense
+
+pragma solidity 0.8.0;
 
 interface IGovernance  {
 
@@ -8,7 +10,7 @@ interface IGovernance  {
     uint256 deadline,
     uint8 v,
     bytes32 r,
-    bytes32 s,
+    bytes32 s
   ) external;
 
   function delegate(address to) external;
