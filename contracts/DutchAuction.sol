@@ -53,8 +53,8 @@ contract DutchAuction{
     // Total amount of ETH raised
     // AuctionId => total amount of ETH raised
     mapping (uint256 => uint256) public ethRaised;
-    // AuctionId => amount
-    mapping (uint256 => uint256) public collectedFees;
+    // // AuctionId => amount
+    // mapping (uint256 => uint256) public collectedFees;
 
     // Auction State
     // AuctionId => state
@@ -199,23 +199,28 @@ contract DutchAuction{
         require (msg.value > 0, "Cant bid with 0");
 
 
-        if (amount > tokensLeft[_auctionId]){
-            amount = tokensLeft[_auctionId];
-        }
-
-        tokensLeft[_auctionId] -= amount;
-
         // Calculate fee
         uint256 bidFee =   amount * fee[_auctionId] / 100;
 
+
+        // Calculate amount of tokens to buy (amount - fee)
+        uint256 bidAmount = amount - bidFee;
+
+        if (bidAmount > tokensLeft[_auctionId]){
+            bidAmount = tokensLeft[_auctionId];
+        }
+
+        tokensLeft[_auctionId] -= bidAmount;
+
+
         // Bidders Token Reserve
-        reserve[_auctionId][msg.sender] += amount - bidFee;
+        reserve[_auctionId][msg.sender] += bidAmount;
 
         // Collected fees
-        fees[_auctionId] += bidFee;
+        // fees[_auctionId] += bidFee;
 
         // Tokens sold
-        sold[_auctionId] += amount;
+        sold[_auctionId] += bidAmount;
 
         // Total eth raised
         ethRaised[_auctionId] += msg.value;
@@ -334,18 +339,28 @@ contract DutchAuction{
             withdrawAmount = 0;
             ethRaised[_auctionId] = 0;
         }
-
-        // send the collected fees to the operator (ERC20)
-        if (collectedFees[_auctionId] > 0){
-            if (collectedFees[_auctionId] > token.balanceOf(address(this))){
-                collectedFees[_auctionId] = token.balanceOf(address(this));
-            }
+        
+        // if tokens left
+        if (tokensLeft[_auctionId] > 0){
+            // send the tokens to the operator (ERC20)
             require(
-                token.transfer(auctionSafe, collectedFees[_auctionId]);,
+                token.transfer(auctionSafe, tokensLeft[_auctionId]),
                 "Transfer failed."
             );
-            collectedFees[_auctionId] = 0;
+            tokensLeft[_auctionId] = 0;
         }
+
+        // send the collected fees to the operator (ERC20)
+        // if (collectedFees[_auctionId] > 0){
+        //     if (collectedFees[_auctionId] > token.balanceOf(address(this))){
+        //         collectedFees[_auctionId] = token.balanceOf(address(this));
+        //     }
+        //     require(
+        //         token.transfer(auctionSafe, collectedFees[_auctionId]);,
+        //         "Transfer failed."
+        //     );
+        //     collectedFees[_auctionId] = 0;
+        // }
 
         auctionState[_auctionId] = AuctionStates.Collected;
     }
